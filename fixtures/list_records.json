@@ -2,7 +2,7 @@
   "data": [
     {
       "id": 1,
-      "zone_id": "example.com",
+      "zone_id": "example-alpha.com",
       "parent_id": null,
       "name": "",
       "content": "ns1.dnsimple.com admin.dnsimple.com 1458642070 86400 7200 604800 300",
@@ -18,7 +18,7 @@
     },
     {
       "id": 69061,
-      "zone_id": "example.com",
+      "zone_id": "example-alpha.com",
       "parent_id": null,
       "name": "",
       "content": "ns1.dnsimple.com",
@@ -34,7 +34,7 @@
     },
     {
       "id": 2,
-      "zone_id": "example.com",
+      "zone_id": "example-alpha.com",
       "parent_id": null,
       "name": "",
       "content": "ns2.dnsimple.com",
@@ -50,7 +50,7 @@
     },
     {
       "id": 3,
-      "zone_id": "example.com",
+      "zone_id": "example-alpha.com",
       "parent_id": null,
       "name": "",
       "content": "ns3.dnsimple.com",
@@ -66,7 +66,7 @@
     },
     {
       "id": 4,
-      "zone_id": "example.com",
+      "zone_id": "example-alpha.com",
       "parent_id": null,
       "name": "",
       "content": "ns4.dnsimple.com",

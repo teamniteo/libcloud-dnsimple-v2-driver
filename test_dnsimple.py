@@ -62,7 +62,7 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertEqual(len(zones), 2)
 
         zone1 = zones[0]
-        self.assertEqual(zone1.id, '1')
+        self.assertEqual(zone1.id, 'example-alpha.com')
         self.assertEqual(zone1.type, 'master')
         self.assertEqual(zone1.domain, 'example-alpha.com')
         self.assertEqual(zone1.ttl, 3600)
@@ -70,7 +70,7 @@ class DNSimpleV2DNSTests(unittest.TestCase):
                                          "private_whois", "expires_on", "created_at", "updated_at"])
 
         zone2 = zones[1]
-        self.assertEqual(zone2.id, '2')
+        self.assertEqual(zone2.id, 'example-beta.com')
         self.assertEqual(zone2.type, 'master')
         self.assertEqual(zone2.domain, 'example-beta.com')
         self.assertEqual(zone2.ttl, 3600)
@@ -122,33 +122,56 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(record5.extra, ["zone_id", "parent_id", "ttl", "priority", "regions", "system_record",
                                            "created_at", "updated_at"])
 
+    def test_create_record_success(self):
+        zone = self.driver.list_zones()[0]
+        DNSimpleV2DNSMockHttp.type = 'CREATE'
+        record = self.driver.create_record(name='foo', zone=zone,
+                                           type=RecordType.MX,
+                                           data='mail.example-alpha.com', extra={"priority": 10})
 
-    # def test_create_record_success(self):
-    #     zone = self.driver.list_zones()[0]
-    #     DNSimpleDNSMockHttp.type = 'CREATE'
-    #     record = self.driver.create_record(name='domain4', zone=zone,
-    #                                        type=RecordType.MX,
-    #                                        data='mail.example.com')
-    #     self.assertEqual(record.id, '172')
-    #     self.assertEqual(record.name, '')
-    #     self.assertEqual(record.type, RecordType.MX)
-    #     self.assertEqual(record.data, 'mail.example.com')
-    #     self.assertHasKeys(record.extra, ['ttl', 'created_at', 'updated_at',
-    #                                       'domain_id', 'priority'])
+        self.assertEqual(record.id, '1')
+        self.assertEqual(record.name, 'foo')
+        self.assertEqual(record.type, RecordType.MX)
+        self.assertEqual(record.data, 'mail.example-alpha.com')
+        self.assertHasKeys(record.extra, ["zone_id", "parent_id", "ttl", "priority", "regions", "system_record",
+                                          "created_at", "updated_at"])
 
-    # def test_update_record_success(self):
-    #     record = self.driver.get_record(zone_id='1',
-    #                                     record_id='123')
-    #     DNSimpleDNSMockHttp.type = 'UPDATE'
-    #     extra = {'ttl': 4500}
-    #     record1 = self.driver.update_record(record=record, name='www',
-    #                                         type=record.type,
-    #                                         data='updated.com',
-    #                                         extra=extra)
-    #     self.assertEqual(record.data, 'example.com')
-    #     self.assertEqual(record.extra.get('ttl'), 3600)
-    #     self.assertEqual(record1.data, 'updated.com')
-    #     self.assertEqual(record1.extra.get('ttl'), 4500)
+    def test_get_zone_success(self):
+        zone1 = self.driver.get_zone(zone_id='example-alpha.com')
+        self.assertEqual(zone1.id, 'example-alpha.com')
+        self.assertEqual(zone1.type, 'master')
+        self.assertEqual(zone1.domain, 'example-alpha.com')
+        self.assertHasKeys(zone1.extra, ["account_id", "registrant_id", "unicode_name", "state", "auto_renew",
+                                         "private_whois", "expires_on", "created_at", "updated_at"])
+
+    def test_get_record_success(self):
+        record = self.driver.get_record(zone_id='example-alpha.com',
+                                        record_id='1')
+        self.assertEqual(record.id, '1')
+        self.assertEqual(record.name, '')
+        self.assertEqual(record.type, RecordType.MX)
+        self.assertEqual(record.data, 'mxa.example-alpha.com')
+        self.assertHasKeys(record.extra, ["zone_id", "parent_id", "ttl", "priority", "regions", "system_record",
+                                           "created_at", "updated_at"])
+
+    def test_update_record_success(self):
+        record = self.driver.get_record(zone_id='example-alpha.com',
+                                        record_id='1')
+        DNSimpleV2DNSMockHttp.type = 'UPDATE'
+        record1 = self.driver.update_record(
+            record=record,
+            name='www',
+            data='updated.com',
+            extra={
+                'ttl': 4500
+            },
+            type=None,
+        )
+
+        self.assertEqual(record.data, 'mxa.example-alpha.com')
+        self.assertEqual(record.extra.get('ttl'), 3600)
+        self.assertEqual(record1.data, 'updated.com')
+        self.assertEqual(record1.extra.get('ttl'), 4500)
 
     # def test_delete_zone_success(self):
     #     zone = self.driver.list_zones()[0]
@@ -171,10 +194,25 @@ class DNSimpleV2DNSMockHttp(MockHttp):
         body = self.fixtures.load('list_domains.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-    def _v2_user_zones_1_records(self, method, url, body, headers):
+    def _v2_user_zones_example_alpha_com_records(self, method, url, body, headers):
         body = self.fixtures.load('list_records.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _v2_user_zones_example_alpha_com_records_CREATE(self, method, url, body, headers):
+        body = self.fixtures.load('create_record.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
-if __name__ == '__main__':
-    sys.exit(unittest.main())
+    def _v2_user_zones_example_alpha_com_records_1(self, method, url, body, headers):
+        body = self.fixtures.load('get_record.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_user_zones_example_alpha_com_records_1_UPDATE(self, method, url, body, headers):
+        body = self.fixtures.load('update_record.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_user_domains_example_alpha_com(self, method, url, body, headers):
+        body = self.fixtures.load('get_zone.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+# if __name__ == '__main__':
+#     sys.exit(unittest.main())

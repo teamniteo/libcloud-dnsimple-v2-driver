@@ -1,0 +1,18 @@
+{
+  "data": {
+    "id": 5,
+    "zone_id": "example-alpha.com",
+    "parent_id": null,
+    "name": "",
+    "content": "updated.com",
+    "ttl": 4500,
+    "priority": 20,
+    "type": "MX",
+    "regions": [
+      "global"
+    ],
+    "system_record": false,
+    "created_at": "2016-10-05T09:51:35Z",
+    "updated_at": "2016-10-05T09:51:35Z"
+  }
+}

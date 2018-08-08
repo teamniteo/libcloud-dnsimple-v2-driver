@@ -87,7 +87,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
         """
         response = self.connection.request('/v2/{}/domains'.format(self.connection.user_id))
 
-        zones = self._to_zones(response.object)
+        zones = self._to_zones(response.object.get("data"))
         return zones
 
     def list_records(self, zone):
@@ -100,7 +100,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
         :return: ``list`` of :class:`Record`
         """
         response = self.connection.request('/v2/{}/zones/{}/records'.format(self.connection.user_id, zone.id))
-        records = self._to_records(response.object, zone)
+        records = self._to_records(response.object.get("data"), zone)
         return records
 
     def get_zone(self, zone_id):
@@ -113,7 +113,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
         :rtype: :class:`Zone`
         """
         response = self.connection.request('/v2/{}/domains/{}'.format(self.connection.user_id, zone_id))
-        zone = self._to_zone(response.object)
+        zone = self._to_zone(response.object.get("data"))
         return zone
 
     def get_record(self, zone_id, record_id):
@@ -128,12 +128,12 @@ class DNSimpleV2DNSDriver(DNSDriver):
 
         :rtype: :class:`Record`
         """
-        response = self.connection.request('/v2/{}/zones/%s/records/%s'.format(
+        response = self.connection.request('/v2/{}/zones/{}/records/{}'.format(
             self.connection.user_id,
             zone_id,
             record_id,
         ))
-        record = self._to_record(response.object, zone_id=zone_id)
+        record = self._to_record(response.object.get("data"), zone_id=zone_id)
         return record
 
     def create_zone(self, domain, type='master', ttl=None, extra=None):
@@ -215,7 +215,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
             method='POST',
             data=r_data,
         )
-        record = self._to_record(response.object, zone=zone)
+        record = self._to_record(response.object.get("data"), zone=zone)
         return record
 
     def update_record(self, record, name, type, data, extra=None):
@@ -263,7 +263,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
             method='PUT',
             data=r_data,
         )
-        record = self._to_record(response.object, zone=zone)
+        record = self._to_record(response.object.get("data"), zone=zone)
         return record
 
     def delete_zone(self, zone):
@@ -302,7 +302,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
     def _to_zones(self, data):
         # TODO: upgrade this to v2
         zones = []
-        for zone in data.get("data"):
+        for zone in data:
             _zone = self._to_zone(zone)
             zones.append(_zone)
 
@@ -310,9 +310,10 @@ class DNSimpleV2DNSDriver(DNSDriver):
 
     def _to_zone(self, data):
         # TODO: upgrade this to v2
-        id = data.get('id')
+        id = data.get('name')
         name = data.get('name')
         extra = {
+            "id": data.get("id"),
             "account_id": data.get("account_id"),
             "registrant_id": data.get("registrant_id"),
             "unicode_name": data.get("unicode_name"),
@@ -333,7 +334,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
     def _to_records(self, data, zone):
         # TODO: upgrade this to v2
         records = []
-        for item in data.get("data"):
+        for item in data:
             record = self._to_record(item, zone=zone)
             records.append(record)
         return records

@@ -1,0 +1,18 @@
+{
+  "data": {
+    "id": 1,
+    "zone_id": "example-alpha.com",
+    "parent_id": null,
+    "name": "foo",
+    "content": "mail.example-alpha.com",
+    "ttl": 3600,
+    "priority": 10,
+    "type": "MX",
+    "system_record": false,
+    "regions": [
+      "global"
+    ],
+    "created_at": "2016-01-07T17:45:13Z",
+    "updated_at": "2016-01-07T17:45:13Z"
+  }
+}
