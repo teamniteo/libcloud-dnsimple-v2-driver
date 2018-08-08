@@ -161,14 +161,11 @@ class DNSimpleV2DNSDriver(DNSDriver):
         """
         r_json = {'name': domain}
 
-        if extra is not None:
-            r_json.update(extra)
-
         r_data = json.dumps(r_json)
 
         response = self.connection.request(
             '/v2/{}/domains'.format(self.connection.user_id), method='POST', data=r_data)
-        zone = self._to_zone(response.object)
+        zone = self._to_zone(response.object.get("data"))
         return zone
 
     def create_record(self, name, zone, type, data, extra=None):
@@ -277,7 +274,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
 
         :rtype: ``bool``
         """
-        self.connection.request('/v2/{}/zones/{}'.format(self.connection.user_id, zone.id), method='DELETE')
+        self.connection.request('/v2/{}/domains/{}'.format(self.connection.user_id, zone.id), method='DELETE')
         return True
 
     def delete_record(self, record):
@@ -291,7 +288,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
         """
         zone_id = record.zone.id
 
-        self.connection.request('/v2/{}/zones/%s/records/%s'.format(
+        self.connection.request('/v2/{}/zones/{}/records/{}'.format(
             self.connection.user_id,
             zone_id,
             record.id,

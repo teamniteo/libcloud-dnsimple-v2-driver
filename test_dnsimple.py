@@ -21,13 +21,29 @@ from libcloud.dns.types import RecordType
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import FileFixtures
 
-from dnsimple import DNSimpleV2DNSDriver
-
+from dnsimple import DNSimpleV2DNSDriver, DNSimpleV2DNSConnection
 
 DNS_PARAMS_DNSIMPLE_V2 = ('user', 'key')
 
 
+class DNSimpleV2DNSConnectionTests(unittest.TestCase):
+
+    def test_dnsimple_v2_connection(self):
+        connection = DNSimpleV2DNSConnection("user", "key")
+        headers = connection.add_default_headers({})
+
+        self.assertDictEqual(
+            headers,
+            {
+                "Authorization": "Bearer key",
+                "Accept": "application/json",
+                "Content-Type": "application/json",
+            }
+        )
+
+
 class DNSimpleV2DNSTests(unittest.TestCase):
+
     def setUp(self):
         DNSimpleV2DNSDriver.connectionCls.conn_class = DNSimpleV2DNSMockHttp
         DNSimpleV2DNSMockHttp.type = None
@@ -136,6 +152,16 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(record.extra, ["zone_id", "parent_id", "ttl", "priority", "regions", "system_record",
                                           "created_at", "updated_at"])
 
+    def test_create_zone_success(self):
+        DNSimpleV2DNSMockHttp.type = 'CREATE'
+        zone = self.driver.create_zone(domain='example-alpha.com')
+        self.assertEqual(zone.id, 'example-alpha.com')
+        self.assertEqual(zone.domain, 'example-alpha.com')
+        self.assertEqual(zone.ttl, 3600)
+        self.assertEqual(zone.type, 'master')
+        self.assertHasKeys(zone.extra, ["id", "account_id", "registrant_id", "unicode_name", "state", "auto_renew",
+                                        "private_whois", "expires_on", "created_at", "updated_at", ])
+
     def test_get_zone_success(self):
         zone1 = self.driver.get_zone(zone_id='example-alpha.com')
         self.assertEqual(zone1.id, 'example-alpha.com')
@@ -173,11 +199,20 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertEqual(record1.data, 'updated.com')
         self.assertEqual(record1.extra.get('ttl'), 4500)
 
-    # def test_delete_zone_success(self):
-    #     zone = self.driver.list_zones()[0]
-    #     DNSimpleDNSMockHttp.type = 'DELETE_200'
-    #     status = self.driver.delete_zone(zone=zone)
-    #     self.assertTrue(status)
+    def test_delete_zone_success(self):
+        zone = self.driver.list_zones()[0]
+        DNSimpleV2DNSMockHttp.type = 'DELETE_204'
+        status = self.driver.delete_zone(zone=zone)
+        self.assertTrue(status)
+
+    def test_delete_record_success(self):
+        zone = self.driver.list_zones()[0]
+        records = self.driver.list_records(zone=zone)
+        self.assertEqual(len(records), 5)
+        record = records[1]
+        DNSimpleV2DNSMockHttp.type = 'DELETE_204'
+        status = self.driver.delete_record(record=record)
+        self.assertTrue(status)
 
 
 class DNSimpleV2Fixtures(FileFixtures):
@@ -198,6 +233,10 @@ class DNSimpleV2DNSMockHttp(MockHttp):
         body = self.fixtures.load('list_records.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
 
+    def _v2_user_domains_CREATE(self, method, url, body, headers):
+        body = self.fixtures.load('create_domain.json')
+        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
     def _v2_user_zones_example_alpha_com_records_CREATE(self, method, url, body, headers):
         body = self.fixtures.load('create_record.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
@@ -213,6 +252,14 @@ class DNSimpleV2DNSMockHttp(MockHttp):
     def _v2_user_domains_example_alpha_com(self, method, url, body, headers):
         body = self.fixtures.load('get_zone.json')
         return (httplib.OK, body, {}, httplib.responses[httplib.OK])
+
+    def _v2_user_domains_example_alpha_com_DELETE_204(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.NO_CONTENT])
+
+    def _v2_user_zones_example_alpha_com_records_69061_DELETE_204(self, method, url, body, headers):
+        return (httplib.OK, '', {}, httplib.responses[httplib.NO_CONTENT])
+
+
 
 # if __name__ == '__main__':
 #     sys.exit(unittest.main())
