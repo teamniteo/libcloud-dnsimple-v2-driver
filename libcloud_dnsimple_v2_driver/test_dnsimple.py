@@ -11,7 +11,6 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
-import sys
 import unittest
 
 from libcloud.utils.py3 import httplib
@@ -21,7 +20,7 @@ from libcloud.dns.types import RecordType
 from libcloud.test import MockHttp
 from libcloud.test.file_fixtures import FileFixtures
 
-from dnsimple import DNSimpleV2DNSDriver, DNSimpleV2DNSConnection
+from libcloud_dnsimple_v2_driver.dnsimple import DNSimpleV2DNSDriver, DNSimpleV2DNSConnection
 
 DNS_PARAMS_DNSIMPLE_V2 = ('user', 'key')
 
