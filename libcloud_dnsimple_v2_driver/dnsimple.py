@@ -85,7 +85,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Zone`
         """
-        response = self.connection.request('/v2/{}/domains'.format(self.connection.user_id))
+        response = self.connection.request('/v2/{}/domains?per_page=100'.format(self.connection.user_id))
 
         zones = self._to_zones(response.object.get("data"))
         return zones
@@ -99,7 +99,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-        response = self.connection.request('/v2/{}/zones/{}/records'.format(self.connection.user_id, zone.id))
+        response = self.connection.request('/v2/{}/zones/{}/records?per_page=100'.format(self.connection.user_id, zone.id))
         records = self._to_records(response.object.get("data"), zone)
         return records
 
