@@ -3,3 +3,6 @@
 .pytest_cache/
 libcloud_dnsimple_v2_driver/.pytest_cache/
 htmlcov/
+.python-version
+build/
+MANIFEST

@@ -7,3 +7,10 @@ DNSSimple API implementation in current version of libcloud.
 ## TODO
 
 Deal with pagination
+
+## Quick start
+
+Here is documentation of libcloud about registering third party drivers.
+
+https://libcloud.readthedocs.io/en/latest/other/registering-a-third-party-driver.html
+
