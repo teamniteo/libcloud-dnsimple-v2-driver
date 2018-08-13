@@ -79,30 +79,29 @@ class DNSimpleV2DNSDriver(DNSDriver):
         RecordType.URL: 'URL'
     }
 
-    def list_zones(self):
+    def iterate_zones(self):
         """
         Return a list of zones.
 
         :return: ``list`` of :class:`Zone`
         """
-        zones = []
         page_number = 1
 
         while True:
             response = self.connection.request('/v2/{}/domains?per_page=100&current_page={}'.format(
-                self.connection.user_id,
-                page_number)
+                    self.connection.user_id,
+                    page_number,
+                )
             )
-            zones += self._to_zones(response.object.get("data"))
+            for zone in self._to_zones(response.object.get("data")):
+                yield zone
 
             pagination = response.object.get("pagination")
             page_number = pagination["current_page"] + 1
             if pagination["current_page"] >= pagination["total_pages"]:
                 break
 
-        return zones
-
-    def list_records(self, zone):
+    def iterate_records(self, zone):
         """
         Return a list of records for the provided zone.
 
@@ -111,21 +110,23 @@ class DNSimpleV2DNSDriver(DNSDriver):
 
         :return: ``list`` of :class:`Record`
         """
-
-        records = []
         page_number = 1
 
         while True:
             response = self.connection.request(
-                '/v2/{}/zones/{}/records?per_page=100&current_page={}'.format(self.connection.user_id, zone.id, page_number))
-            records += self._to_records(response.object.get("data"), zone)
+                '/v2/{}/zones/{}/records?per_page=100&current_page={}'.format(
+                    self.connection.user_id,
+                    zone.id,
+                    page_number,
+                )
+            )
+            for record in self._to_records(response.object.get("data"), zone):
+                yield record
 
             pagination = response.object.get("pagination")
             page_number = pagination["current_page"] + 1
             if pagination["current_page"] >= pagination["total_pages"]:
                 break
-
-        return records
 
     def get_zone(self, zone_id):
         """
