@@ -88,7 +88,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
         page_number = 1
 
         while True:
-            response = self.connection.request('/v2/{}/domains?per_page=100&current_page={}'.format(
+            response = self.connection.request('/v2/{}/domains?per_page=100&page={}'.format(
                     self.connection.user_id,
                     page_number,
                 )
@@ -114,7 +114,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
 
         while True:
             response = self.connection.request(
-                '/v2/{}/zones/{}/records?per_page=100&current_page={}'.format(
+                '/v2/{}/zones/{}/records?per_page=100&page={}'.format(
                     self.connection.user_id,
                     zone.id,
                     page_number,
