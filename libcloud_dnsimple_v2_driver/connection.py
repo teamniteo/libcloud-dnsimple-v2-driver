@@ -18,7 +18,11 @@ class LibCloudRequest(object):
 
     def request(self, action, params=None, data=None, headers=None,
                 method='GET', raw=False):
+        if not headers:
+            headers = {}
+
         headers["Accept-Encoding"] = "plain"
+
         self.response = requests.request(
             method=method.lower(),
             url="".join([self.host, action]),
