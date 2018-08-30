@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8876c99670de9a48b51afdff78718a7c677adbde7852204834ca37e86d052052"
+            "sha256": "96d47460e9317971b6abb592c46d125348d31361b4cd64dd6bf49f8343d326af"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -18,18 +18,21 @@
     "default": {
         "apache-libcloud": {
             "hashes": [
-                "sha256:0e2eee3802163bd0605975ed1e284cafc23203919bfa80c0cc5d3cd2543aaf97",
-                "sha256:48d5d64790a5112cace1a8e28d228c3f1c5bd3ddbd986a5453172d2da19f47d5"
+                "sha256:2be0bac4bc4d6c3cffd057508dd8403066e1ecbc4f4252d00118e232cc9f7631",
+                "sha256:740f27565544d5590a3eaa7f8170ff0690bea65004e8fc0e7a6f3e8b4f653ac9",
+                "sha256:9118a4e64cc169b0bba7eec5d16ce6a7d325e97be643dd9c885f1862a7d51780",
+                "sha256:a04278781250fbb7d448203daedb4a3428183ef05b4d72cbbf28971775404df2"
             ],
             "index": "pypi",
-            "version": "==2.3.0"
+            "version": "==1.0.0"
         },
         "atomicwrites": {
             "hashes": [
-                "sha256:240831ea22da9ab882b551b31d4225591e5e447a68c5e188db5b89ca1d487585",
-                "sha256:a24da68318b08ac9c9c45029f4a10371ab5b20e4226738e150e6e7c571630ae6"
+                "sha256:6b5282987b21cd79151f51caccead7a09d0a32e89c568bd9e3c4aaa7bbdf3f3a",
+                "sha256:e16334d50fe0f90919ef7339c24b9b62e6abaa78cd2d226f3d94eb067eb89043"
             ],
-            "version": "==1.1.5"
+            "markers": "python_version != '3.3.*' and python_version >= '2.7' and python_version != '3.0.*' and python_version != '3.1.*' and python_version != '3.2.*'",
+            "version": "==1.2.0"
         },
         "attrs": {
             "hashes": [
@@ -40,10 +43,11 @@
         },
         "certifi": {
             "hashes": [
-                "sha256:13e698f54293db9f89122b0581843a782ad0934a4fe0172d2a980ba77fc61bb7",
-                "sha256:9fa520c1bacfb634fa7af20a76bcbd3d5fb390481724c597da32c719a7dca4b0"
+                "sha256:376690d6f16d32f9d1fe8932551d80b23e9d393a8578c5633a2ed39a64861638",
+                "sha256:456048c7e371c089d0a77a5212fb37a2c2dce1e24146e3b7e0261736aaeaa22a"
             ],
-            "version": "==2018.4.16"
+            "index": "pypi",
+            "version": "==2018.8.24"
         },
         "chardet": {
             "hashes": [
@@ -114,19 +118,19 @@
         },
         "py": {
             "hashes": [
-                "sha256:3fd59af7435864e1a243790d322d763925431213b6b8529c6ca71081ace3bbf7",
-                "sha256:e31fb2767eb657cbde86c454f02e99cb846d3cd9d61b318525140214fdc0e98e"
+                "sha256:06a30435d058473046be836d3fc4f27167fd84c45b99704f2fb5509ef61f9af1",
+                "sha256:50402e9d1c9005d759426988a492e0edaadb7f4e68bcddfea586bc7432d009c6"
             ],
-            "markers": "python_version != '3.0.*' and python_version != '3.1.*' and python_version >= '2.7' and python_version != '3.3.*' and python_version != '3.2.*'",
-            "version": "==1.5.4"
+            "markers": "python_version != '3.3.*' and python_version >= '2.7' and python_version != '3.0.*' and python_version != '3.1.*' and python_version != '3.2.*'",
+            "version": "==1.6.0"
         },
         "pytest": {
             "hashes": [
-                "sha256:86a8dbf407e437351cef4dba46736e9c5a6e3c3ac71b2e942209748e76ff2086",
-                "sha256:e74466e97ac14582a8188ff4c53e6cc3810315f342f6096899332ae864c1d432"
+                "sha256:2e7c330338b2732ddb992217962e3454aa7290434e75329b1a6739cea41bea6b",
+                "sha256:4abcd98faeea3eb95bd05aa6a7b121d5f89d72e4d36ddb0dcbbfd1ec9f3651d1"
             ],
             "index": "pypi",
-            "version": "==3.7.1"
+            "version": "==3.7.3"
         },
         "pytest-cov": {
             "hashes": [
@@ -141,6 +145,7 @@
                 "sha256:63b52e3c866428a224f97cab011de738c36aec0185aa91cfacd418b5d58911d1",
                 "sha256:ec22d826a36ed72a7358ff3fe56cbd4ba69dd7a6718ffd450ff0e9df7a47ce6a"
             ],
+            "index": "pypi",
             "version": "==2.19.1"
         },
         "requests-mock": {

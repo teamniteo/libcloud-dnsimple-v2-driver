@@ -15,7 +15,8 @@
 """
 DNSimple v2 DNS Driver
 """
-from libcloud.common.base import ConnectionUserAndKey
+
+from libcloud_dnsimple_v2_driver.connection import LibCloudRequest
 
 __all__ = [
     'DNSimpleV2DNSDriver'
@@ -30,18 +31,32 @@ from libcloud.common.dnsimple import DNSimpleDNSResponse
 from libcloud.dns.types import RecordType
 from libcloud.dns.base import DNSDriver, Zone, Record
 
-
 DEFAULT_ZONE_TTL = 3600
 
 
-class DNSimpleV2DNSConnection(ConnectionUserAndKey):
+class DNSimpleV2DNSConnection(LibCloudRequest):
     """
     user_id: put account ID, you can find it here: https://dnsimple.com/a/<ACCOUNT_ID>/account
     key: API token taken from the admin interface
     """
 
-    host = 'api.dnsimple.com'
+    # api_host = 'api.sandbox.dnsimple.com'
+    # port = 443
     responseCls = DNSimpleDNSResponse
+    user_id = None
+    key = None
+
+    # def __init__(self, key, secret, **kwargs):
+    #     super().__init__(self.api_host, self.port, **kwargs)
+    #     self.user_id = key
+    #     self.key = secret
+
+    def request(self, action, params=None, data=None, headers=None,
+                method='GET', raw=False):
+        if not headers:
+            headers = {}
+        self.add_default_headers(headers)
+        return super().request(action, params=params, data=data, headers=headers, method=method, raw=raw)
 
     def add_default_headers(self, headers):
         """
@@ -58,7 +73,9 @@ class DNSimpleV2DNSConnection(ConnectionUserAndKey):
 class DNSimpleV2DNSDriver(DNSDriver):
     type = "DNSimpleV2"
     name = 'DNSimpleV2'
+    host = 'api.dnsimple.com'
     website = 'https://dnsimple.com/'
+
     connectionCls = DNSimpleV2DNSConnection
 
     RECORD_TYPE_MAP = {
@@ -78,6 +95,14 @@ class DNSimpleV2DNSDriver(DNSDriver):
         RecordType.TXT: 'TXT',
         RecordType.URL: 'URL'
     }
+
+    def __init__(self, key, secret=None, secure=True, **kwargs):
+        super().__init__(key, secret, secure, self.host, 443, **kwargs)
+
+    # def _ex_connection_class_kwargs(self):
+    #     kwargs = super()._ex_connection_class_kwargs()
+    #     kwargs["port"] = 443
+    #     return kwargs
 
     def iterate_zones(self):
         """

@@ -11,47 +11,99 @@
 # distributed under the License is distributed on an "AS IS" BASIS,
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
+import json
+import os
 import unittest
-
-from libcloud.utils.py3 import httplib
-
+import requests_mock
 from libcloud.dns.types import RecordType
-
-from libcloud.test import MockHttp
-from libcloud.test.file_fixtures import FileFixtures
-
-from libcloud_dnsimple_v2_driver.dnsimple import DNSimpleV2DNSDriver, DNSimpleV2DNSConnection
+from libcloud_dnsimple_v2_driver.dnsimple import DNSimpleV2DNSDriver
 
 DNS_PARAMS_DNSIMPLE_V2 = ('user', 'key')
 
 
-class DNSimpleV2DNSConnectionTests(unittest.TestCase):
-
-    def test_dnsimple_v2_connection(self):
-        connection = DNSimpleV2DNSConnection("user", "key")
-        headers = connection.add_default_headers({})
-
-        self.assertDictEqual(
-            headers,
-            {
-                "Authorization": "Bearer key",
-                "Accept": "application/json",
-                "Content-Type": "application/json",
-            }
-        )
-
-
 class DNSimpleV2DNSTests(unittest.TestCase):
+    secure = True
+    host = DNSimpleV2DNSDriver.host
+    _test_domain = "example-alpha.com"
 
     def setUp(self):
-        DNSimpleV2DNSDriver.connectionCls.conn_class = DNSimpleV2DNSMockHttp
-        DNSimpleV2DNSMockHttp.type = None
         self.driver = DNSimpleV2DNSDriver(*DNS_PARAMS_DNSIMPLE_V2)
 
     def assertHasKeys(self, dictionary, keys):
         for key in keys:
             self.assertTrue(key in dictionary, 'key "%s" not in dictionary' %
                             (key))
+
+    def _get_url(self, action):
+        return "{}://{}{}".format(
+            "https" if self.secure else "http",
+            self.host,
+            action,
+        )
+
+    def _get_fixture(self, ident):
+        with open(os.path.join("fixtures", ident + ".json")) as f:
+            return json.loads(f.read())
+
+    def set_mock_requests(self, m):
+        m.get(self._get_url(
+            "/v2/{}/domains?per_page=100&page=1".format(DNS_PARAMS_DNSIMPLE_V2[0])),
+            json=self._get_fixture("list_domains")
+        )
+        m.get(self._get_url(
+            "/v2/{}/zones/{}/records?per_page=100&page=1".format(
+                DNS_PARAMS_DNSIMPLE_V2[0],
+                self._test_domain,
+            )),
+            json=self._get_fixture("list_records")
+        )
+        m.get(self._get_url(
+            "/v2/{}/domains?per_page=100&page=1".format(DNS_PARAMS_DNSIMPLE_V2[0])),
+            json=self._get_fixture("list_domains")
+        )
+        m.post(self._get_url(
+            "/v2/{}/zones/{}/records".format(
+                DNS_PARAMS_DNSIMPLE_V2[0],
+                self._test_domain,
+            )),
+            json=self._get_fixture("create_record")
+        )
+        m.post(self._get_url(
+            "/v2/{}/domains".format(
+                DNS_PARAMS_DNSIMPLE_V2[0],
+            )),
+            json=self._get_fixture("create_domain")
+        )
+        m.get(self._get_url(
+            "/v2/{}/domains/{}".format(
+                DNS_PARAMS_DNSIMPLE_V2[0],
+                self._test_domain,
+            )),
+            json=self._get_fixture("get_zone")
+        )
+        m.get(self._get_url(
+            "/v2/{}/zones/{}/records/1".format(
+                DNS_PARAMS_DNSIMPLE_V2[0],
+                self._test_domain,
+            )),
+            json=self._get_fixture("get_record")
+        )
+        m.put(self._get_url("/v2/{}/zones/{}/records/1".format(
+                DNS_PARAMS_DNSIMPLE_V2[0],
+                self._test_domain,
+            )),
+            json=self._get_fixture("update_record")
+        )
+        m.delete(self._get_url("/v2/{}/domains/{}".format(
+                DNS_PARAMS_DNSIMPLE_V2[0],
+                self._test_domain,
+            )
+        ))
+        m.delete(self._get_url("/v2/{}/zones/{}/records/69061".format(
+            DNS_PARAMS_DNSIMPLE_V2[0],
+            self._test_domain,
+        )
+        ))
 
     def test_list_record_types(self):
         record_types = self.driver.list_record_types()
@@ -72,7 +124,10 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertTrue(RecordType.TXT in record_types)
         self.assertTrue(RecordType.URL in record_types)
 
-    def test_list_zones_success(self):
+    @requests_mock.Mocker()
+    def test_list_zones_success(self, m):
+        self.set_mock_requests(m)
+
         zones = self.driver.list_zones()
         self.assertEqual(len(zones), 2)
 
@@ -92,7 +147,10 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(zone2.extra, ["account_id", "registrant_id", "unicode_name", "state", "auto_renew",
                                          "private_whois", "expires_on", "created_at", "updated_at"])
 
-    def test_list_records_success(self):
+    @requests_mock.Mocker()
+    def test_list_records_success(self, m):
+        self.set_mock_requests(m)
+
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
         self.assertEqual(len(records), 5)
@@ -137,9 +195,11 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(record5.extra, ["zone_id", "parent_id", "ttl", "priority", "regions", "system_record",
                                            "created_at", "updated_at"])
 
-    def test_create_record_success(self):
+    @requests_mock.Mocker()
+    def test_create_record_success(self, m):
+        self.set_mock_requests(m)
+
         zone = self.driver.list_zones()[0]
-        DNSimpleV2DNSMockHttp.type = 'CREATE'
         record = self.driver.create_record(name='foo', zone=zone,
                                            type=RecordType.MX,
                                            data='mail.example-alpha.com', extra={"priority": 10})
@@ -151,8 +211,10 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(record.extra, ["zone_id", "parent_id", "ttl", "priority", "regions", "system_record",
                                           "created_at", "updated_at"])
 
-    def test_create_zone_success(self):
-        DNSimpleV2DNSMockHttp.type = 'CREATE'
+    @requests_mock.Mocker()
+    def test_create_zone_success(self, m):
+        self.set_mock_requests(m)
+
         zone = self.driver.create_zone(domain='example-alpha.com')
         self.assertEqual(zone.id, 'example-alpha.com')
         self.assertEqual(zone.domain, 'example-alpha.com')
@@ -161,7 +223,10 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(zone.extra, ["id", "account_id", "registrant_id", "unicode_name", "state", "auto_renew",
                                         "private_whois", "expires_on", "created_at", "updated_at", ])
 
-    def test_get_zone_success(self):
+    @requests_mock.Mocker()
+    def test_get_zone_success(self, m):
+        self.set_mock_requests(m)
+
         zone1 = self.driver.get_zone(zone_id='example-alpha.com')
         self.assertEqual(zone1.id, 'example-alpha.com')
         self.assertEqual(zone1.type, 'master')
@@ -169,7 +234,10 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(zone1.extra, ["account_id", "registrant_id", "unicode_name", "state", "auto_renew",
                                          "private_whois", "expires_on", "created_at", "updated_at"])
 
-    def test_get_record_success(self):
+    @requests_mock.Mocker()
+    def test_get_record_success(self, m):
+        self.set_mock_requests(m)
+
         record = self.driver.get_record(zone_id='example-alpha.com',
                                         record_id='1')
         self.assertEqual(record.id, '1')
@@ -179,10 +247,12 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertHasKeys(record.extra, ["zone_id", "parent_id", "ttl", "priority", "regions", "system_record",
                                            "created_at", "updated_at"])
 
-    def test_update_record_success(self):
+    @requests_mock.Mocker()
+    def test_update_record_success(self, m):
+        self.set_mock_requests(m)
+
         record = self.driver.get_record(zone_id='example-alpha.com',
                                         record_id='1')
-        DNSimpleV2DNSMockHttp.type = 'UPDATE'
         record1 = self.driver.update_record(
             record=record,
             name='www',
@@ -198,67 +268,24 @@ class DNSimpleV2DNSTests(unittest.TestCase):
         self.assertEqual(record1.data, 'updated.com')
         self.assertEqual(record1.extra.get('ttl'), 4500)
 
-    def test_delete_zone_success(self):
+    @requests_mock.Mocker()
+    def test_delete_zone_success(self, m):
+        self.set_mock_requests(m)
+
         zone = self.driver.list_zones()[0]
-        DNSimpleV2DNSMockHttp.type = 'DELETE_204'
         status = self.driver.delete_zone(zone=zone)
         self.assertTrue(status)
 
-    def test_delete_record_success(self):
+    @requests_mock.Mocker()
+    def test_delete_record_success(self, m):
+        self.set_mock_requests(m)
+
         zone = self.driver.list_zones()[0]
         records = self.driver.list_records(zone=zone)
         self.assertEqual(len(records), 5)
         record = records[1]
-        DNSimpleV2DNSMockHttp.type = 'DELETE_204'
         status = self.driver.delete_record(record=record)
         self.assertTrue(status)
-
-
-class DNSimpleV2Fixtures(FileFixtures):
-
-    def __init__(self, fixtures_type, sub_dir=''):
-        super().__init__(fixtures_type, sub_dir)
-        self.root = "fixtures"
-
-
-class DNSimpleV2DNSMockHttp(MockHttp):
-    fixtures = DNSimpleV2Fixtures("dns")
-
-    def _v2_user_domains(self, method, url, body, headers):
-        body = self.fixtures.load('list_domains.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _v2_user_zones_example_alpha_com_records(self, method, url, body, headers):
-        body = self.fixtures.load('list_records.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _v2_user_domains_CREATE(self, method, url, body, headers):
-        body = self.fixtures.load('create_domain.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _v2_user_zones_example_alpha_com_records_CREATE(self, method, url, body, headers):
-        body = self.fixtures.load('create_record.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _v2_user_zones_example_alpha_com_records_1(self, method, url, body, headers):
-        body = self.fixtures.load('get_record.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _v2_user_zones_example_alpha_com_records_1_UPDATE(self, method, url, body, headers):
-        body = self.fixtures.load('update_record.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _v2_user_domains_example_alpha_com(self, method, url, body, headers):
-        body = self.fixtures.load('get_zone.json')
-        return (httplib.OK, body, {}, httplib.responses[httplib.OK])
-
-    def _v2_user_domains_example_alpha_com_DELETE_204(self, method, url, body, headers):
-        return (httplib.OK, '', {}, httplib.responses[httplib.NO_CONTENT])
-
-    def _v2_user_zones_example_alpha_com_records_69061_DELETE_204(self, method, url, body, headers):
-        return (httplib.OK, '', {}, httplib.responses[httplib.NO_CONTENT])
-
-
 
 # if __name__ == '__main__':
 #     sys.exit(unittest.main())

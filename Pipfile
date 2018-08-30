@@ -9,7 +9,9 @@ python_version = "3.6"
 [dev-packages]
 
 [packages]
-apache-libcloud = "*"
+apache-libcloud = "==1.0.0"
 pytest = "*"
 requests-mock = "*"
 pytest-cov = "*"
+certifi = "*"
+requests = "*"
