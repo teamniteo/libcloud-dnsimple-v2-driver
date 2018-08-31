@@ -118,7 +118,7 @@ class DNSimpleV2DNSDriver(DNSDriver):
                     page_number,
                 )
             )
-            for zone in self._to_zones(response.object.get("data")):
+            for zone in self._to_zones(response.object.get("data", [])):
                 yield zone
 
             pagination = response.object.get("pagination")
