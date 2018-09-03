@@ -347,7 +347,6 @@ class DNSimpleV2DNSDriver(DNSDriver):
         return True
 
     def _to_zones(self, data):
-        # TODO: upgrade this to v2
         zones = []
         for zone in data:
             _zone = self._to_zone(zone)
@@ -356,7 +355,6 @@ class DNSimpleV2DNSDriver(DNSDriver):
         return zones
 
     def _to_zone(self, data):
-        # TODO: upgrade this to v2
         id = data.get('name')
         name = data.get('name')
         extra = {
@@ -379,7 +377,6 @@ class DNSimpleV2DNSDriver(DNSDriver):
                     driver=self, extra=extra)
 
     def _to_records(self, data, zone):
-        # TODO: upgrade this to v2
         records = []
         for item in data:
             record = self._to_record(item, zone=zone)
@@ -387,7 +384,6 @@ class DNSimpleV2DNSDriver(DNSDriver):
         return records
 
     def _to_record(self, data, zone_id=None, zone=None):
-        # TODO: upgrade this to v2
         if not zone:  # We need zone_id or zone
             zone = self.get_zone(zone_id)
         id = data.get('id')
