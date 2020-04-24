@@ -10,6 +10,6 @@ setup(
     license="Apache License 2.0",
     long_description=open("README.md").read(),
     install_requires=[
-        "apache-libcloud==1.0.0-rc2-ef038d17092c0b6e99e9ac9870cbada1dcd5c782",
+        "apache-libcloud @ git+https://github.com/niteoweb/libcloud.git@niteoweb_internal_release",
     ],
 )
