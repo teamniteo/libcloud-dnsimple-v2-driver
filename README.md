@@ -18,8 +18,8 @@ New version of libcloud doesn't have this issue and you should use the other bra
 
 Installation:
 
-    pip install apache-libcloud
-    pip install https://github.com/niteoweb/ebn/archive/master.zip
+    pip install git+https://github.com/niteoweb/libcloud@niteoweb_internal_release
+    pip install git+https://github.com/niteoweb/libcloud-dnsimple-v2-driver@master
 
 The driver doesn't require anything special and you can use this like this:
 
