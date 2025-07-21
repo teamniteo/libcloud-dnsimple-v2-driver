@@ -41,3 +41,7 @@ You can test the code like this:
     make test
 
 The code coverage report is generated into htmlcov/ directory. Just open *index.html* to see it.
+
+## We're hiring!
+
+At Niteo we regularly contribute back to the Open Source community. If you do too, we'd like to invite you to [join our team](https://niteo.co/careers)!
